@@ -1,0 +1,36 @@
+name: Release and versioning system
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # ubuntu-latest - self-hosted
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.USER_TOKEN }} # Nécessaire pour commiter les changements
+
+    - name: Get the version from the load file
+      run: |
+        VERSION=$(grep -oP 'local addon_version = "\K[^"]+' lua/autorun/golden_admin_menu_load.lua)
+        echo "Version: $VERSION"
+        echo "::set-output name=version::$VERSION"
+      id: get_version
+  
+    - name: Update version in autorun/golden_admin_menu_load.lua
+      run: |
+        sed -i "s/local addon_version = \".*\"/local addon_version = \"$VERSION\"/" lua/autorun/golden_admin_menu_load.lua
+        cat lua/autorun/golden_admin_menu_load.lua
+
+    - name: Commit changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add lua/autorun/golden_admin_menu_load.lua
+        git commit -m "Update addon version to $VERSION"
+        git push origin HEAD:main
