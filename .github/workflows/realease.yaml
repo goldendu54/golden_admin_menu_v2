@@ -11,7 +11,7 @@ on:
  
 jobs:
   deploy:
-    runs-on: ubuntu-latest # ubuntu-latest - self-hosted
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
@@ -27,7 +27,6 @@ jobs:
       id: get_version
 
     - name: add +1 to the version
-        # Increment the version number like 1.0.0 -> 1.0.1 and 1.0.9 -> 1.1.0
       run: |
         VERSION=${{ steps.get_version.outputs.version }}
         IFS='.' read -r -a version <<< "$VERSION"
@@ -41,12 +40,16 @@ jobs:
         echo "::set-output name=version::$VERSION"
       id: increment_version
 
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git remote set-url origin https://x-access-token:${{ secrets.USER_TOKEN }}@github.com/goldendu54/golden_admin_menu_v2.git
+
     - name: Create the tag
       run: |
         VERSION=${{ steps.increment_version.outputs.version }}
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git tag -a "v$VERSION" -m "Release $VERSION"
+        git tag "v$VERSION"
         git push origin "v$VERSION"
   
     - name: Update version in autorun/golden_admin_menu_load.lua
