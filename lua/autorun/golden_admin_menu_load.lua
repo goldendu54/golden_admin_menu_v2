@@ -2,6 +2,8 @@
 -- Automatically created by gcreator (github.com/MaaxIT)
 GAdmin_Menu = {}
 
+local addon_version = "1.0.0"
+
 -- Make loading functions
 local function Inclu(f) return include("golden_admin_menu/"..f) end
 local function AddCS(f) return AddCSLuaFile("golden_admin_menu/"..f) end
@@ -21,7 +23,8 @@ if SERVER then
 	AddCS("client/cl_hooks.lua")
 	AddCS("client/cl_network.lua")
 
-	
+	MsgC(Color(255, 0, 0), "[GAdmin Menu] ", Color(255, 255, 255), "Addon loaded successfully! Version: "..addon_version.."\n")
+
 else
 
 	Inclu("client/cl_functions.lua")

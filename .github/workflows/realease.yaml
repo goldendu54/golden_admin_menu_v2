@@ -1,9 +1,13 @@
 name: Release and versioning system
 
+# Ignore the push if the push comes from the commit of the version file
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'lua/autorun/golden_admin_menu_load.lua'
+      - '.github/workflows/release.yaml'
 
 jobs:
   deploy:
@@ -13,7 +17,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        token: ${{ secrets.USER_TOKEN }} # Nécessaire pour commiter les changements
+        token: ${{ secrets.USER_TOKEN }} 
 
     - name: Get the version from the load file
       run: |
@@ -21,6 +25,27 @@ jobs:
         echo "Version: $VERSION"
         echo "::set-output name=version::$VERSION"
       id: get_version
+
+    - name: add +1 to the version
+        # Increment the version number like 1.0.0 -> 1.0.1 and 1.0.9 -> 1.1.0
+      run: |
+        VERSION=${{ steps.get_version.outputs.version }}
+        IFS='.' read -r -a version <<< "$VERSION"
+        version[2]=$((version[2]+1))
+        if [ ${version[2]} -eq 10 ]; then
+          version[2]=0
+          version[1]=$((version[1]+1))
+        fi
+        VERSION="${version[0]}.${version[1]}.${version[2]}"
+        echo "New version: $VERSION"
+        echo "::set-output name=version::$VERSION"
+      id: increment_version
+
+    - name: Create the tag
+      run: |
+        VERSION=${{ steps.increment_version.outputs.version }}
+        git tag -a "v$VERSION" -m "Release $VERSION"
+        git push origin "v$VERSION"
   
     - name: Update version in autorun/golden_admin_menu_load.lua
       run: |
@@ -34,3 +59,18 @@ jobs:
         git add lua/autorun/golden_admin_menu_load.lua
         git commit -m "Update addon version to $VERSION"
         git push origin HEAD:main
+
+    - name: Create a release of all the files 
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+      with:
+        tag_name: ${{ steps.increment_version.outputs.version }}
+        release_name: Release ${{ steps.increment_version.outputs.version }}
+        body: |
+          Release ${{ steps.increment_version.outputs.version }}
+        draft: false
+        prerelease: false
+
+        
