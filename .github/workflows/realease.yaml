@@ -8,7 +8,7 @@ on:
     paths-ignore:
       - 'lua/autorun/golden_admin_menu_load.lua'
       - '.github/workflows/release.yaml'
-
+ 
 jobs:
   deploy:
     runs-on: ubuntu-latest # ubuntu-latest - self-hosted
