@@ -55,8 +55,8 @@ jobs:
         git push origin "v$VERSION"
   
     - name: Update version in autorun/golden_admin_menu_load.lua
-      run: |
-        sed -i "s/local addon_version = \".*\"/local addon_version = \"$VERSION\"/" lua/autorun/golden_admin_menu_load.lua
+      run: | # use the incremented ve
+        sed -i "s/local addon_version = \".*\"/local addon_version = ${{ steps.increment_version.outputs.version }}/g" lua/autorun/golden_admin_menu_load.lua
         cat lua/autorun/golden_admin_menu_load.lua
 
     - name: Commit changes
@@ -74,7 +74,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
       with:
         tag_name: ${{ steps.increment_version.outputs.version }}
-        release_name: Release ${{ steps.increment_version.outputs.version }}
+        release_name: ${{ steps.increment_version.outputs.version }}
         body: |
           Release ${{ steps.increment_version.outputs.version }}
         draft: false
