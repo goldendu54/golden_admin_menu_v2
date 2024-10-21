@@ -53,14 +53,6 @@ jobs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git remote set-url origin https://x-access-token:${{ secrets.USER_TOKEN }}@github.com/goldendu54/golden_admin_menu_v2.git
 
-    - name: Create the tag
-      run: | # ignore the error if the tag already exists
-        VERSION=${{ steps.increment_version.outputs.version }} 
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git tag -a v$VERSION -m "Version $VERSION" || true
-        git push origin v$VERSION
-
     - name: Update version in autorun/golden_admin_menu_load.lua
       run: | # use the incremented value to update the version in the file like this local addon_version = "1.0.1"
         VERSION=${{ steps.increment_version.outputs.version }}

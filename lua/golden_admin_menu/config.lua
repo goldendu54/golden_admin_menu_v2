@@ -16,4 +16,4 @@ GAdmin_Menu.Config.AdminRanks = {
 	["admin"] = true,
 }
 
-GAdmin_Menu.Config.Debug = false -- Enable debug mode (prints debug messages to console)
+GAdmin_Menu.Config.Debug = false -- Enable debug mode (prints debug messages to console) 
