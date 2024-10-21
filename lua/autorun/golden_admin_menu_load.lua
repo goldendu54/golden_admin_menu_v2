@@ -2,7 +2,7 @@
 -- Automatically created by gcreator (github.com/MaaxIT)
 GAdmin_Menu = {}
 
-local addon_version = "1.0.1"
+local addon_version = 1.0.2
 
 -- Make loading functions
 local function Inclu(f) return include("golden_admin_menu/"..f) end
