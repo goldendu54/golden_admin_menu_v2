@@ -29,8 +29,6 @@ function GAdmin_Menu:Font(iSize, iWidth)
 end
 
 
-
-
 function GAdmin_Menu:SetAdminMode(ply)
 
 	if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then  
