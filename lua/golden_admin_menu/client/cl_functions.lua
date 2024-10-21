@@ -43,7 +43,7 @@ function GAdmin_Menu:SetAdminMode(ply)
 end
 
 
-function GAdmin_Menu:DarkrpNotify(target, message)
+function GAdmin_Menu:Notify(target, message)
 	notification.AddLegacy(message, 2, 3)
 end
 
@@ -58,11 +58,12 @@ function GAdmin_Menu.Player_Get_All()
     return players
 end
 
-
---// Print every 5 minutes the timestamp in the console //--
-timer.Create("GAdmin_Menu:Timestamp", 240, 0, function()
-    MsgC(Color(255, 255, 255), "-------------------- " .. os.date("%d/%m/%Y %X") .. " --------------------\n")
-end)
+if GAdmin_Menu.Config.Debug then
+	--// Print every 5 minutes the timestamp in the console //--
+	timer.Create("GAdmin_Menu:Timestamp", 240, 0, function()
+		MsgC(Color(255, 255, 255), "-------------------- " .. os.date("%d/%m/%Y %X") .. " --------------------\n")
+	end)
+end
 
 // -- New Panel UI -- //
 
