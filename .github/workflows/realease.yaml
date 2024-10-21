@@ -26,18 +26,25 @@ jobs:
         echo "::set-output name=version::$VERSION"
       id: get_version
 
-    - name: add +1 to the version
+    - name: add +1 to the version # increment the version by 1 like this 1.0.0 -> 1.0.1 and 1.0.9 -> 1.1.0 and 1.9.9 -> 2.0.0
       run: |
         VERSION=${{ steps.get_version.outputs.version }}
-        IFS='.' read -r -a version <<< "$VERSION"
-        version[2]=$((version[2]+1))
-        if [ ${version[2]} -eq 10 ]; then
-          version[2]=0
-          version[1]=$((version[1]+1))
+        MAJOR=$(echo $VERSION | cut -d. -f1)
+        MINOR=$(echo $VERSION | cut -d. -f2)
+        PATCH=$(echo $VERSION | cut -d. -f3)
+        if [ $PATCH -lt 9 ]; then
+          PATCH=$((PATCH+1))
+        elif [ $MINOR -lt 9 ]; then
+          MINOR=$((MINOR+1))
+          PATCH=0
+        else
+          MAJOR=$((MAJOR+1))
+          MINOR=0
+          PATCH=0
         fi
-        VERSION="${version[0]}.${version[1]}.${version[2]}"
-        echo "New version: $VERSION"
-        echo "::set-output name=version::$VERSION"
+        echo "Version: $MAJOR.$MINOR.$PATCH"
+        echo "::set-output name=version::$MAJOR.$MINOR.$PATCH"
+        
       id: increment_version
 
     - name: Configure Git
