@@ -13,22 +13,12 @@ GAdmin_Menu.Config.MaskCommand = "!mask" -- The command to open the mask menu
 -- Admin ranks
 GAdmin_Menu.Config.AdminRanks = {
 	["superadmin"] = true,	
-	["gstaff"] = true,
-	["sadmin"] = true,
 	["admin"] = true,
-	["administrator"] = true,
-	["moderator"] = true,
-	["moderator-test"] = true,
 }
 
 GAdmin_Menu.Config.PremiumRanks = {
 	["superadmin"] = true,	
-	["gstaff"] = true,
-	["sadmin"] = true,
 	["admin"] = true,
-	["administrator"] = true,
-	["moderator"] = true,
-	["moderator-test"] = true,
 	["elite"] = true,
 	["vip+"] = true,
 	["vip"] = true,
@@ -38,34 +28,19 @@ GAdmin_Menu.Config.PremiumRanks = {
 
 GAdmin_Menu.Config.EliteRanks = {
 	["superadmin"] = true,	
-	["gstaff"] = true,
-	["sadmin"] = true,
 	["admin"] = true,
-	["administrator"] = true,
-	["moderator"] = true,
-	["moderator-test"] = true,
 	["elite"] = true,
 }
 GAdmin_Menu.Config.VipPRanks = {
 	["superadmin"] = true,	
-	["gstaff"] = true,
-	["sadmin"] = true,
 	["admin"] = true,
-	["administrator"] = true,
-	["moderator"] = true,
-	["moderator-test"] = true,
 	["elite"] = true,
 	["vip+"] = true,
 }
 
 GAdmin_Menu.Config.VipRanks = {
 	["superadmin"] = true,	
-	["gstaff"] = true,
-	["sadmin"] = true,
 	["admin"] = true,
-	["administrator"] = true,
-	["moderator"] = true,
-	["moderator-test"] = true,
 	["elite"] = true,
 	["vip+"] = true,
 	["vip"] = true,
