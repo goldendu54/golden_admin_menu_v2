@@ -39,11 +39,7 @@ function GAdmin_Menu:SetToStaffMode(ply)
 
     end
 
-
-
 end
-
-
 
 function GAdmin_Menu:ModMask(ply)
 

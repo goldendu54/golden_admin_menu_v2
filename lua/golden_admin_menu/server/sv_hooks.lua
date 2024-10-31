@@ -8,7 +8,7 @@ hook.Add("PlayerSay", "GAdmin_Menu:PlayerSay", function(ply, text, team)
     local text = string.lower(text)
     if text == GAdmin_Menu.Config.StaffCommand then
 		if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then
-			GAdmin_Menu:Notify(ply, "You are not an admin!")
+			GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("notAdmin"))
 			return 
 		end
         GAdmin_Menu:SetToStaffMode(ply)
@@ -16,7 +16,7 @@ hook.Add("PlayerSay", "GAdmin_Menu:PlayerSay", function(ply, text, team)
 
 	elseif text == GAdmin_Menu.Config.MenuCommand then
 		if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then 
-			GAdmin_Menu:Notify(ply, "You are not an admin!")
+			GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("notAdmin"))
 			return
 		end
 		GAdmin_Menu:AdminMenu(ply)
@@ -24,7 +24,7 @@ hook.Add("PlayerSay", "GAdmin_Menu:PlayerSay", function(ply, text, team)
 
 	elseif text == GAdmin_Menu.Config.MaskCommand then
 		if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then 
-			GAdmin_Menu:Notify(ply, "You are not an admin!")
+			GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("notAdmin"))
 			return
 		end
 			GAdmin_Menu:ModMask(ply)
@@ -32,7 +32,7 @@ hook.Add("PlayerSay", "GAdmin_Menu:PlayerSay", function(ply, text, team)
 
 	elseif text == GAdmin_Menu.Config.PowerCommand then
 		if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then
-			GAdmin_Menu:Notify(ply, "You are not an admin!")
+			GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("notAdmin"))
 			return
 		end
 		GAdmin_Menu:ModPower(ply)
@@ -63,19 +63,6 @@ hook.Add("PlayerDisconnected", "GAdmin_Menu:PlayerDisconnected", function(ply)
 	end
 end)
 
-
---[[  NOT USED ANYMORE
-hook.Add("Think", "GAdmin_Menu:Think", function()
-	for k, v in pairs(player.GetAll()) do
-		if v:GetMoveType() == MOVETYPE_NOCLIP then 
-			v:SetNWBool("GAdmin:NoClip", true)
-		else
-			v:SetNWBool("GAdmin:NoClip", false)
-		end
-
-	end
-end)
-]]
 hook.Add("EntityEmitSound", "GAdmin_Menu:EntityEmitSound", function(data)
 	local ply = data.Entity
     if ply:GetClass() == "player" then

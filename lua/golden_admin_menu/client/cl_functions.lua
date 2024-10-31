@@ -32,7 +32,7 @@ end
 function GAdmin_Menu:SetAdminMode(ply)
 
 	if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then  
-        GAdmin_Menu:Notify(ply, "You are not an admin!")
+        GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("notAdmin"))
         return
     end
 
@@ -63,12 +63,29 @@ if GAdmin_Menu.Config.Debug then
 	end)
 end
 
+function draw.Circle( x, y, radius, seg )
+	local cir = {}
+
+	table.insert( cir, { x = x, y = y, u = 0.5, v = 0.5 } )
+	for i = 0, seg do
+		local a = math.rad( ( i / seg ) * -360 )
+		table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+	end
+
+	local a = math.rad( 0 ) -- This is needed for non absolute segment counts
+	table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+
+	surface.DrawPoly( cir )
+end
+
 // -- New Panel UI -- //
 
 local MainPanel
 function GAdmin_Menu:OpenMenus(ply, target)
 
 	ply = ply or LocalPlayer()
+	target = target or LocalPlayer()
+	local admin = LocalPlayer()
 
 	if IsValid(MainPanel) then
 		MainPanel:Remove()
@@ -80,109 +97,118 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	MainPanel:SetTitle("")
 	MainPanel:MakePopup()
 	MainPanel.Paint = function(self, w, h)
-		OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_BACKGROUND )
-        
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["background"] )
+        surface.DrawRect( 0, 0, w, h )
+
     end 
 
-	self = MainPanel
+	MainPanelHeader = vgui.Create("DPanel", MainPanel)
+	MainPanelHeader:Dock( TOP )
+	MainPanelHeader:SetTall( 40 )
+	MainPanelHeader:DockMargin( -5, -30, -5, 0 )
+	MainPanelHeader:InvalidateLayout( true )
+	MainPanelHeader.Paint = function( me, w, h )
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
+        surface.DrawRect( 0, 0, w, h )
 
-	self.Header = vgui.Create("DPanel", self)
-	self.Header:Dock( TOP )
-	self.Header:SetTall( 40 )
-	self.Header:DockMargin( -5, -30, -5, 0 )
-	self.Header:InvalidateLayout( true )
-	self.Header.Paint = function( me, w, h )
-		OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-		OS_UI.DrawText( OS_UI.Settings.Server_Name .. " - Menu Administratif ", "OS_UI.Font.21", w / 2, h / 2, OS_UI.Colors.GREY, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.SimpleText( GAdmin_Menu.Config.Title, "OS_UI.Font.21", w / 2, h / 2, GAdmin_Menu.Constants["colors"]["Grey"], TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	end
-    
-	OS_UI.CreateIconObject( self.Header, OS_UI.Icons.CIRCLE, self:GetWide() - 22, self.Header:GetTall() / 2 - 6, 12, 12, true, function()
-		self:Close()
-	end )
 
-	
+	MainPanelHeader.Close = vgui.Create("DButton", MainPanelHeader)
+	MainPanelHeader.Close:Dock( RIGHT )
+	MainPanelHeader.Close:DockMargin( 0, 0, 5, 0 )
+	MainPanelHeader.Close:SetWide( 30 )
+	MainPanelHeader.Close:SetText("")
+	MainPanelHeader.Close.Paint = function( me, w, h )
+
+		surface.SetDrawColor(GAdmin_Menu.Constants["colors"]["Red"])
+		draw.NoTexture()
+		draw.Circle( w / 2, h / 2, 7, 50 )
+
+	end
+	MainPanelHeader.Close.DoClick = function()
+		MainPanel:Remove()
+	end
 
 	// -- Staff Button Tab -- //
-	self.TabAdmin_Button = vgui.Create( "DPanel", self )
-	self.TabAdmin_Button:Dock( BOTTOM )
-	self.TabAdmin_Button:SetTall( 80 )
-	self.TabAdmin_Button:DockMargin( 0, 0, 0, 0 )
-	self.TabAdmin_Button.Paint = function( me, w, h )
-		OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
+	TabAdmin_Button = vgui.Create( "DPanel", MainPanel )
+	TabAdmin_Button:Dock( BOTTOM )
+	TabAdmin_Button:SetTall( 80 )
+	TabAdmin_Button:DockMargin( 0, 0, 0, 0 )
+	TabAdmin_Button.Paint = function( me, w, h )
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
+		surface.DrawRect( 0, 0, w, h )
 	end
 
-	self.TabAdmin_Label = vgui.Create( "DLabel", self.TabAdmin_Button )
-	self.TabAdmin_Label:Dock( TOP )
-	self.TabAdmin_Label:SetTall( 90 )
-	self.TabAdmin_Label:DockMargin( 5, 5, 0, 0 )
-	self.TabAdmin_Label:SetText( "Action de Staff : " )
-	self.TabAdmin_Label:SetFont( "OS_UI.Font.21" )
-	self.TabAdmin_Label:SetTextColor( OS_UI.Colors.GREY )
-	self.TabAdmin_Label:SizeToContents()
-
-
+	TabAdmin_Label = vgui.Create( "DLabel", TabAdmin_Button )
+	TabAdmin_Label:Dock( TOP )
+	TabAdmin_Label:SetTall( 90 )
+	TabAdmin_Label:DockMargin( 5, 5, 0, 0 )
+	TabAdmin_Label:SetText( GAdmin_Menu:GetLanguage("staffActions") )
+	TabAdmin_Label:SetFont( "OS_UI.Font.21" )
+	TabAdmin_Label:SetTextColor( GAdmin_Menu.Constants["colors"]["Grey"] )
+	TabAdmin_Label:SizeToContents()
 
 	local bsapce = 90
-
-	self.TabAdmin_Button.Btn1 = vgui.Create("DButton", self.TabAdmin_Button)
-	self.TabAdmin_Button.Btn1:Dock( LEFT )
-	self.TabAdmin_Button.Btn1:DockMargin( bsapce, 5, 0, 5 )
-	self.TabAdmin_Button.Btn1:SetWide( 200 )	
-	self.TabAdmin_Button.Btn1:SetText("Se mettre en Service")
-	self.TabAdmin_Button.Btn1:SetFont("OS_UI.Font.20")
-	self.TabAdmin_Button.Btn1:SetTextColor(OS_UI.Colors.WHITE)
-	self.TabAdmin_Button.Btn1.DoClick = function(self)
+	TabAdmin_Button.Btn1 = vgui.Create("DButton", TabAdmin_Button)
+	TabAdmin_Button.Btn1:Dock( LEFT )
+	TabAdmin_Button.Btn1:DockMargin( bsapce, 5, 0, 5 )
+	TabAdmin_Button.Btn1:SetWide( 200 )	
+	TabAdmin_Button.Btn1:SetText( GAdmin_Menu:GetLanguage("setStaffMod") )
+	TabAdmin_Button.Btn1:SetFont("OS_UI.Font.20")
+	TabAdmin_Button.Btn1:SetTextColor( GAdmin_Menu.Constants["colors"]["White"])
+	TabAdmin_Button.Btn1.DoClick = function(self)
 		RunConsoleCommand("say", GAdmin_Menu.Config.StaffCommand)
 	end
 
-	self.TabAdmin_Button.Btn1.Think = function(self)
+	TabAdmin_Button.Btn1.Think = function(self)
 		self.Paint = function(me, w, h)
-			if LocalPlayer():GetNWBool("GAdmin:StaffMode") then
-				OS_UI.DrawRoundedBox(6, 0, 0, w, h, OS_UI.Colors.RED)
+			if admin:GetNWBool("GAdmin:StaffMode") then
+				draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"] )
 			else
-				OS_UI.DrawRoundedBox(6, 0, 0, w, h, OS_UI.Colors.GREEN)
+				draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Green"] )
 			end
 		end
 	end
 
-	self.TabAdmin_Button.Btn2 = vgui.Create("DButton", self.TabAdmin_Button)
-	self.TabAdmin_Button.Btn2:Dock( LEFT )
-	self.TabAdmin_Button.Btn2:DockMargin( bsapce, 5, 0, 5 )
-	self.TabAdmin_Button.Btn2:SetWide( 200 )
-	self.TabAdmin_Button.Btn2:SetText("Mod Mask")
-	self.TabAdmin_Button.Btn2:SetFont("OS_UI.Font.20")
-	self.TabAdmin_Button.Btn2:SetTextColor(OS_UI.Colors.WHITE)
-	self.TabAdmin_Button.Btn2.DoClick = function(self)
+	TabAdmin_Button.Btn2 = vgui.Create("DButton", TabAdmin_Button)
+	TabAdmin_Button.Btn2:Dock( LEFT )
+	TabAdmin_Button.Btn2:DockMargin( bsapce, 5, 0, 5 )
+	TabAdmin_Button.Btn2:SetWide( 200 )
+	TabAdmin_Button.Btn2:SetText( GAdmin_Menu:GetLanguage("modMask") )
+	TabAdmin_Button.Btn2:SetFont("OS_UI.Font.20")
+	TabAdmin_Button.Btn2:SetTextColor( GAdmin_Menu.Constants["colors"]["White"])
+	TabAdmin_Button.Btn2.DoClick = function(self)
 		RunConsoleCommand("say", GAdmin_Menu.Config.MaskCommand)
 	end
 
-	self.TabAdmin_Button.Btn2.Think = function(self)
+	TabAdmin_Button.Btn2.Think = function(self)
 		self.Paint = function(me, w, h)
-			if LocalPlayer():GetNWBool("GAdmin:ModMask") then
-				OS_UI.DrawRoundedBox(6, 0, 0, w, h, OS_UI.Colors.RED)
+			if admin:GetNWBool("GAdmin:ModMask") then
+				draw.RoundedBox(6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"])
 			else
-				OS_UI.DrawRoundedBox(6, 0, 0, w, h, OS_UI.Colors.GREEN)
+				draw.RoundedBox(6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Green"])
 			end
 		end
 	end
 
-	self.TabAdmin_Button.Btn3 = vgui.Create("DButton", self.TabAdmin_Button)
-	self.TabAdmin_Button.Btn3:Dock( LEFT )
-	self.TabAdmin_Button.Btn3:DockMargin( bsapce, 5, 0, 5 )
-	self.TabAdmin_Button.Btn3:SetWide( 200 )
-	self.TabAdmin_Button.Btn3:SetText("Mod Power")
-	self.TabAdmin_Button.Btn3:SetFont("OS_UI.Font.20")
-	self.TabAdmin_Button.Btn3:SetTextColor(OS_UI.Colors.WHITE)
-	self.TabAdmin_Button.Btn3.DoClick = function(self)
+	TabAdmin_Button.Btn3 = vgui.Create("DButton", TabAdmin_Button)
+	TabAdmin_Button.Btn3:Dock( LEFT )
+	TabAdmin_Button.Btn3:DockMargin( bsapce, 5, 0, 5 )
+	TabAdmin_Button.Btn3:SetWide( 200 )
+	TabAdmin_Button.Btn3:SetText( GAdmin_Menu:GetLanguage("modPower") )
+	TabAdmin_Button.Btn3:SetFont("OS_UI.Font.20")
+	TabAdmin_Button.Btn3:SetTextColor( GAdmin_Menu.Constants["colors"]["White"])
+	TabAdmin_Button.Btn3.DoClick = function(self)
 		RunConsoleCommand("say", GAdmin_Menu.Config.PowerCommand)
 	end
 
-	self.TabAdmin_Button.Btn3.Think = function(self)
+	TabAdmin_Button.Btn3.Think = function(self)
 		self.Paint = function(me, w, h)
-			if LocalPlayer():GetNWBool("GAdmin:ModPower") then
-				OS_UI.DrawRoundedBox(6, 0, 0, w, h, OS_UI.Colors.RED)
+			if admin:GetNWBool("GAdmin:ModPower") then
+				draw.RoundedBox(6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"])
 			else
-				OS_UI.DrawRoundedBox(6, 0, 0, w, h, OS_UI.Colors.GREEN)
+				draw.RoundedBox(6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Green"])
 			end
 		end
 	end
@@ -190,59 +216,50 @@ function GAdmin_Menu:OpenMenus(ply, target)
 
 	// -- Player Model Tab -- //
 
-	self.TabPlayer = vgui.Create( "DPanel", self )
-	self.TabPlayer:Dock( LEFT )
-	self.TabPlayer:SetWide( 300 )
-	self.TabPlayer:DockMargin( 0, 5, 5, 5 )
-	self.TabPlayer.Paint = function( me, w, h )
-		OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
+	TabPlayer = vgui.Create( "DPanel", MainPanel )
+	TabPlayer:Dock( LEFT )
+	TabPlayer:SetWide( 300 )
+	TabPlayer:DockMargin( 0, 5, 5, 5 )
+	TabPlayer.Paint = function( me, w, h )
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
+		surface.DrawRect( 0, 0, w, h )
 	end
 
-	self.TabPlayer.Label = vgui.Create( "DLabel", self.TabPlayer )
-	self.TabPlayer.Label:Dock( TOP )
-	self.TabPlayer.Label:SetTall( 30 )
-	self.TabPlayer.Label:DockMargin( 5, 5, 5, 5 )
-	self.TabPlayer.Label:SetText( "Joueur sélectionné : " )
-	self.TabPlayer.Label:SetFont( "OS_UI.Font.21" )
-	self.TabPlayer.Label:SetTextColor( OS_UI.Colors.GREY )
-	self.TabPlayer.Label:SizeToContents()
+	TabPlayer.Label = vgui.Create( "DLabel", TabPlayer )
+	TabPlayer.Label:Dock( TOP )
+	TabPlayer.Label:SetTall( 30 )
+	TabPlayer.Label:DockMargin( 5, 5, 5, 5 )
+	TabPlayer.Label:SetText( GAdmin_Menu:GetLanguage("selectedPlayer") )
+	TabPlayer.Label:SetFont( "OS_UI.Font.21" )
+	TabPlayer.Label:SetTextColor( GAdmin_Menu.Constants["colors"]["Grey"] )
+	TabPlayer.Label:SizeToContents()
 
-	self.TabPlayer.Model = vgui.Create("DModelPanel", self.TabPlayer)
-	self.TabPlayer.Model:Dock( TOP )
-	self.TabPlayer.Model:SetTall( 450 )
-	self.TabPlayer.Model:DockMargin( 5, 5, 5, 5 )
-	self.TabPlayer.Model:SetModel( LocalPlayer():GetModel() )
-	self.TabPlayer.Model:SetCamPos( Vector( 35, 10, 050 ) )
-	function self.TabPlayer.Model:LayoutEntity( Entity ) return end
+	TabPlayer.Model = vgui.Create("DModelPanel", TabPlayer)
+	TabPlayer.Model:Dock( TOP )
+	TabPlayer.Model:SetTall( 450 )
+	TabPlayer.Model:DockMargin( 5, 5, 5, 5 )
+	TabPlayer.Model:SetModel( ply:GetModel() )
+	TabPlayer.Model:SetCamPos( Vector( 35, 10, 050 ) )
+	function TabPlayer.Model:LayoutEntity( Entity ) return end
 
 
-	self.TabPlayer.ComboBox = vgui.Create( "DComboBox", self.TabPlayer )
-	self.TabPlayer.ComboBox:Dock( BOTTOM )
-	self.TabPlayer.ComboBox:DockMargin( 5, 5, 5, 5 )
-	self.TabPlayer.ComboBox:SetTall( 30 )
-	self.TabPlayer.ComboBox:SetValue( "Sélectionnez un utilisateur .." )
-	self.TabPlayer.ComboBox:SetFont( "OS_UI.Font.20" )
-	self.TabPlayer.ComboBox.Paint = function( me, w, h )
-		OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.BASE_BACKGROUND )
-		me:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
+	TabPlayer.ComboBox = vgui.Create( "DComboBox", TabPlayer )
+	TabPlayer.ComboBox:Dock( BOTTOM )
+	TabPlayer.ComboBox:DockMargin( 5, 5, 5, 5 )
+	TabPlayer.ComboBox:SetTall( 30 )
+	TabPlayer.ComboBox:SetValue( GAdmin_Menu:GetLanguage("selectPlayer") )
+	TabPlayer.ComboBox:SetFont( "OS_UI.Font.20" )
+	TabPlayer.ComboBox.Paint = function( self, w, h )
+		draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["header"] )
 	end
 
 	for k, v in pairs( player.GetAll() ) do
 		if v == ply then continue end
-		self.TabPlayer.ComboBox:AddChoice( v:Nick() )
+		TabPlayer.ComboBox:AddChoice( v:Nick() )
 	end
 
+	TabPlayer.ComboBox.OnSelect = function( panel, index, value, data )
 
-	self.TabPlayer.ComboBox.OnSelect = function( panel, index, value, data )
-
-		// remove all old labels
-		for k, v in pairs( self.TabPlayer_Info:GetChildren() ) do
-
-			if v == self.TabPlayer_Info_Label then continue end
-			v:Remove()
-		end
-
-		local target = nil
 		for k, v in pairs( player.GetAll() ) do
 			if v:Nick() == value then
 				target = v
@@ -252,221 +269,115 @@ function GAdmin_Menu:OpenMenus(ply, target)
 		end
 
 		if IsValid( target ) then
-			self.TabPlayer.Model:SetModel( target:GetModel() )
-
-			// remove all old labels
-			for k, v in pairs( self.TabPlayer_Info:GetChildren() ) do
-
-				if v == self.TabPlayer_Info_Label then continue end
-				v:Remove()
-			end
-			
-			local Player_Info = {
-				{ "Nom", Player_Selected:Nick() },
-				{ "SteamID64", Player_Selected:SteamID64() },
-				{ "Groupe", Player_Selected:GetUserGroup() },
-				{ "Argent", DarkRP.formatMoney( Player_Selected:getDarkRPVar("money") ) },
-				{ "Job", Player_Selected:getDarkRPVar("job") },
-				{ "Santé", Player_Selected:Health() },
-				{ "Armure", Player_Selected:Armor() },
-				{ "Faim", Player_Selected:getDarkRPVar("Energy") or 0 },
-				{ "Mort", Player_Selected:Alive() and "Non" or "Oui" },
-			}
-
-		
-			for k, v in pairs( Player_Info ) do
-				ilabel = vgui.Create( "DLabel", self.TabPlayer_Info )
-				ilabel:Dock( TOP )
-				ilabel:SetTall( 30 )
-				ilabel:DockMargin( 5, 25, 5, 5 )
-				ilabel:SetFont( "OS_UI.Font.20" )
-				ilabel:SetTextColor( OS_UI.Colors.WHITE )
-				ilabel:SizeToContents()
-				ilabel:SetText( v[1] .. " : " .. v[2] )
-				
-			end
-
-
-
+			TabPlayer.Model:SetModel( target:GetModel() )
 		end
 	end
-
 
 	// -- Player Information Tab -- //
-	self.TabPlayer_Info = vgui.Create( "DPanel", self )
-	self.TabPlayer_Info:Dock( FILL )
-	self.TabPlayer_Info:DockMargin( 5, 5, 5, 5 )
-	self.TabPlayer_Info.Paint = function( me, w, h )
-		OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
+	TabPlayer_Info = vgui.Create( "DPanel", MainPanel )
+	TabPlayer_Info:Dock( FILL )
+	TabPlayer_Info:DockMargin( 5, 5, 5, 5 )
+	TabPlayer_Info.Paint = function( me, w, h )
+		OS_UI.DrawRect( 0, 0, w, h, GAdmin_Menu.Constants["colors"]["header"] )
 	end
 
-	self.TabPlayer_Info_Label = vgui.Create( "DLabel", self.TabPlayer_Info )
-	self.TabPlayer_Info_Label:Dock( TOP )
-	self.TabPlayer_Info_Label:SetTall( 30 )
-	self.TabPlayer_Info_Label:DockMargin( 5, 5, 5, 5 )
-	self.TabPlayer_Info_Label:SetText( "Informations du joueur : " )
-	self.TabPlayer_Info_Label:SetFont( "OS_UI.Font.21" )
-	self.TabPlayer_Info_Label:SetTextColor( OS_UI.Colors.GREY )
-	self.TabPlayer_Info_Label:SizeToContents()
+	TabPlayer_Info_Label = vgui.Create( "DLabel", TabPlayer_Info )
+	TabPlayer_Info_Label:Dock( TOP )
+	TabPlayer_Info_Label:SetTall( 30 )
+	TabPlayer_Info_Label:DockMargin( 5, 5, 5, 5 )
+	TabPlayer_Info_Label:SetText( "Informations du joueur : " )
+	TabPlayer_Info_Label:SetFont( "OS_UI.Font.21" )
+	TabPlayer_Info_Label:SetTextColor( GAdmin_Menu.Constants["colors"]["Grey"] )
+	TabPlayer_Info_Label:SizeToContents()
 
-	
-	local Player_Selected = target or ply
-	local ilabel 
+	local Player_Info = {
+		{ GAdmin_Menu:GetLanguage("name"), target:Nick() },
+		{ GAdmin_Menu:GetLanguage("steamID64"), target:SteamID64() },
+		{ GAdmin_Menu:GetLanguage("group"), target:GetUserGroup() },
+		{ GAdmin_Menu:GetLanguage("money"), DarkRP.formatMoney( target:getDarkRPVar("money") ) },
+		{ GAdmin_Menu:GetLanguage("job"), target:getDarkRPVar("job") },
+		{ GAdmin_Menu:GetLanguage("health"), target:Health() },
+		{ GAdmin_Menu:GetLanguage("armor"), target:Armor() },
+		{ GAdmin_Menu:GetLanguage("hunger"), target:getDarkRPVar("Energy") or 0 },
+		{ GAdmin_Menu:GetLanguage("dead"), target:Alive() and GAdmin_Menu:GetLanguage("no") or GAdmin_Menu:GetLanguage("yes") },
+	}
 
-	for k, v in pairs( player.GetAll() ) do
-		if v:Nick() == Player_Selected then
-			target = v
-			Player_Selected = v
-			break
-		end
+	for k, v in pairs( Player_Info ) do
+		ilabel = vgui.Create( "DLabel", TabPlayer_Info )
+		ilabel:Dock( TOP )
+		ilabel:SetTall( 30 )
+		ilabel:DockMargin( 5, 25, 5, 5 )
+		ilabel:SetFont( "OS_UI.Font.20" )
+		ilabel:SetTextColor( GAdmin_Menu.Constants["colors"]["White"] )
+		ilabel:SizeToContents()
+		ilabel.Think = function(self)
+			self:SetText( v[1] .. " : " .. v[2] )
+		end	
 	end
-
-	if IsValid( target ) then
-		self.TabPlayer.Model:SetModel( target:GetModel() )
-
-		// remove all old labels
-
-		
-		local Player_Info = {
-			{ "Nom", Player_Selected:Nick() },
-			{ "SteamID64", Player_Selected:SteamID64() },
-			{ "Groupe", Player_Selected:GetUserGroup() },
-			{ "Argent", DarkRP.formatMoney( Player_Selected:getDarkRPVar("money") ) },
-			{ "Job", Player_Selected:getDarkRPVar("job") },
-			{ "Santé", Player_Selected:Health() },
-			{ "Armure", Player_Selected:Armor() },
-			{ "Faim", Player_Selected:getDarkRPVar("Energy") or 0 },
-			{ "Mort", Player_Selected:Alive() and "Non" or "Oui" },
-		}
-
-	
-		for k, v in pairs( Player_Info ) do
-			ilabel = vgui.Create( "DLabel", self.TabPlayer_Info )
-			ilabel:Dock( TOP )
-			ilabel:SetTall( 30 )
-			ilabel:DockMargin( 5, 25, 5, 5 )
-			ilabel:SetFont( "OS_UI.Font.20" )
-			ilabel:SetTextColor( OS_UI.Colors.WHITE )
-			ilabel:SizeToContents()
-			ilabel:SetText( v[1] .. " : " .. v[2] )
-			
-		end
-
-	end
-
-	
-
-
-	
 
 	//-- Player Button Tab --//
-	self.TabPlayer_Button = vgui.Create( "DPanel", self )
-	self.TabPlayer_Button:Dock( RIGHT )
-	self.TabPlayer_Button:SetWide( 300 )
-	self.TabPlayer_Button:DockMargin( 5, 5, 0, 5 )
-	self.TabPlayer_Button.Paint = function( me, w, h )
-		OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
+	TabPlayer_Button = vgui.Create( "DPanel", MainPanel )
+	TabPlayer_Button:Dock( RIGHT )
+	TabPlayer_Button:SetWide( 300 )
+	TabPlayer_Button:DockMargin( 5, 5, 0, 5 )
+	TabPlayer_Button.Paint = function( me, w, h )
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
+		surface.DrawRect( 0, 0, w, h )
 	end
 
 	local btn_tbl = {
 		[1] = {
-			name = "Se téléporter",
+			name = GAdmin_Menu:GetLanguage("goto"),
 			func = function()
 
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
-
-				RunConsoleCommand("sa", "goto", Player_Selected:Nick())
+				RunConsoleCommand("sa", "goto", target:Nick())
 			end
 		},
 		[2] = {
 			name = "bring",
 			func = function()
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
-				RunConsoleCommand("sa", "bring", Player_Selected:Nick())
+				RunConsoleCommand("sa", "bring", target:Nick())
 			end
 		},
 		[3] = {
 			name = "Return",
 			func = function()
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
-				RunConsoleCommand("sa", "return", Player_Selected:Nick())
+				RunConsoleCommand("sa", "return", target:Nick())
 			end
 		},
 		[4] = {
-			name = Player_Selected:IsFrozen() and "Unfreeze" or "Freeze",
+			name = target:IsFrozen() and "Unfreeze" or "Freeze",
 			func = function()
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
-
-				if Player_Selected:IsFrozen() then
-					RunConsoleCommand("sa", "unfreeze", Player_Selected:Nick())
+				if target:IsFrozen() then
+					RunConsoleCommand("sa", "unfreeze", target:Nick())
 				else
-					RunConsoleCommand("sa", "freeze", Player_Selected:Nick())
+					RunConsoleCommand("sa", "freeze", target:Nick())
 				end
 			end
 		},
 		[5] = {
 			name = "Spectate",
 			func = function()
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
-				RunConsoleCommand("sa", "spectate", Player_Selected:Nick())
+				RunConsoleCommand("sa", "spectate", target:Nick())
 			end
 		},
 		[6] = {
 			name = "Kick",
 			func = function()
-
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
-
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas vous Kick vous-même!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 
 				self:SetVisible(false)
-			
+				/*
 				local RFrame = vgui.Create("DFrame")
 				RFrame:SetSize(RX(400), RY(200))
 				RFrame:Center()
@@ -530,21 +441,29 @@ function GAdmin_Menu:OpenMenus(ply, target)
 					self:SetVisible(true)	
 
 				end
+
+			
+
+*/
+
+				RequestPanel = vgui.Create("GAdmin_RequestPanel")
+				RequestPanel:SetTitle(GAdmin_Menu.Config.Title.. " - " .. GAdmin_Menu:GetLanguage("kick"))
+				RequestPanel:AcceptFunction(function(reason)
+					RunConsoleCommand("sa", "kick", target:Nick(), reason)
+					self:SetVisible(true)
+					
+				end)
+				RequestPanel:MakePopup()
+
+				
+
+
 			end
 		},
 		[7] = {
 			name = "Ban",
 			func = function()
-
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
-
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas vous bannir!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 
 				self:SetVisible(false)
 			
@@ -642,30 +561,14 @@ function GAdmin_Menu:OpenMenus(ply, target)
 		[8] = {
 			name = "Slay",
 			func = function()
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
-
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 				RunConsoleCommand("sa", "slay", Player_Selected:Nick())
 			end
 		},
 		[10] = {
 			name = "Set Health",
 			func = function()
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
-
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 				self:SetVisible(false)
 
 				local RFrame = vgui.Create("DFrame")
@@ -737,15 +640,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 		[11] = {
 			name = "Set Armor",
 			func = function()
-				if Player_Selected == nil then 
-					notification.AddLegacy( "Vous devez sélectionner un joueur!", 2, 3)
-					return
-				end
-
-				if Player_Selected == LocalPlayer() then
-					notification.AddLegacy( "Vous ne pouvez pas effectuer cette action sur vous-même!", 2, 3)
-					return
-				end
+				if GAdmin_Menu:TargetCheck() == false then return end
 				self:SetVisible(false)
 
 				local RFrame = vgui.Create("DFrame")
@@ -824,7 +719,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	}
 
 	for k, v in pairs( btn_tbl ) do
-		local btn = vgui.Create("DButton", self.TabPlayer_Button)
+		local btn = vgui.Create("DButton", TabPlayer_Button)
 		btn:Dock( TOP )
 		btn:DockMargin( 5, 5, 5, 5 )
 		btn:SetTall( 30 )
@@ -832,12 +727,182 @@ function GAdmin_Menu:OpenMenus(ply, target)
 		btn:SetFont( "OS_UI.Font.20" )
 		btn:SetTextColor( OS_UI.Colors.WHITE )
 		btn.DoClick = v.func
-
 		btn.Paint = function( me, w, h )
-			OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.RED )
+			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"] )
 		end
 	end
 	
 	
 
 end
+
+function GAdmin_Menu:TargetCheck()
+	if target == nil then 
+		notification.AddLegacy( GAdmin_Menu:GetLanguage("needToSelecPlayer"), 2, 3)
+		return false
+	end
+
+	if target == LocalPlayer() then
+		notification.AddLegacy( GAdmin_Menu:GetLanguage("cannotDoOnYourself"), 2, 3)
+		return false 
+	end
+
+	return true
+end
+
+
+
+
+local PANEL = {}
+
+function PANEL:Init()
+
+	self.GAdmin_MenuNumberRequest = false
+	self.GAdmin_MenuReasonRequest = false
+	self.GAdmin_MenuTitle = ""
+	self.GAdmin_NumberTitle = ""
+	self.GAdmin_ReasonTitle = ""
+
+	if self.GAdmin_MenuNumberRequest and self.GAdmin_MenuReasonRequest then
+		self:SetSize( RX(400), RY(300) )
+	else
+		self:SetSize( RX(400), RY(200) )
+	end
+	self:Center()
+	self:SetTitle("")
+	self:MakePopup()
+	self.Paint = function(self, w, h)
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["background"] )
+		surface.DrawRect( 0, 0, w, h )
+	end
+
+	self.Header = vgui.Create("DPanel", self)
+	self.Header:Dock( TOP )
+	self.Header:SetTall( 40 )
+	self.Header:DockMargin( -5, -30, -5, 0 )
+	self.Header:InvalidateLayout( true )
+	self.Header.Paint = function( me, w, h )
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
+		surface.DrawRect( 0, 0, w, h )
+		draw.SimpleText( self.GAdmin_MenuTitle, "OS_UI.Font.21", w / 2, h / 2, GAdmin_Menu.Constants["colors"]["Grey"], TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	end
+
+	self.Header.Close = vgui.Create("DButton", self.Header)
+	self.Header.Close:SetSize( 12, 12 )
+	self.Header.Close:SetPos( self.Header:GetWide() - 22, self.Header:GetTall() / 2 - 6 )
+	self.Header.Close:SetText("")
+	self.Header.Close.Paint = function(self, w, h)
+		draw.Circle( w / 2, h / 2, 6, 6, GAdmin_Menu.Constants["colors"]["Red"] )
+	end
+	self.Header.Close.DoClick = function()
+		self:Close()
+	end
+
+	if self.GAdmin_MenuNumberRequest then
+
+		self.Number_Request_Text = vgui.Create( "DLabel", self )
+		self.Number_Request_Text:Dock( TOP )
+		self.Number_Request_Text:SetTall( 30 )
+		self.Number_Request_Text:DockMargin( 5, 5, 5, 5 )
+		self.Number_Request_Text:SetText( self.GAdmin_NumberTitle )
+		self.Number_Request_Text:SetFont( "OS_UI.Font.20" )
+
+		self.Number_Request = vgui.Create( "DTextEntry", self )
+		self.Number_Request:Dock( TOP )
+		self.Number_Request:DockMargin( 30, 10, 30, 5 )
+		self.Number_Request:SetTall( 30 )
+		self.Number_Request:SetFont( "OS_UI.Font.20" )
+		self.Number_Request:SetNumeric( true )
+		self.Number_Request.Paint = function( me, w, h )
+			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["background"] )
+		end
+		
+		self.Number_Request.OnChange = function( self )
+			self.GAdmin_MenuNumberRequestValue = self:GetValue()
+		end
+
+	end
+
+	if self.GAdmin_MenuReasonRequest then
+
+		self.Reason_Request_Text = vgui.Create( "DLabel", self )
+		self.Reason_Request_Text:Dock( TOP )
+		self.Reason_Request_Text:SetTall( 30 )
+		self.Reason_Request_Text:DockMargin( 5, 5, 5, 5 )
+		self.Reason_Request_Text:SetText( self.GAdmin_ReasonTitle )
+		self.Reason_Request_Text:SetFont( "OS_UI.Font.20" )
+		
+		self.Reason_Request = vgui.Create( "DTextEntry", self )
+		self.Reason_Request:Dock( TOP )
+		self.Reason_Request:DockMargin( 30, 10, 30, 5 )
+		self.Reason_Request:SetTall( 30 )
+		self.Reason_Request:SetFont( "OS_UI.Font.20" )
+		self.Reason_Request.Paint = function( me, w, h )
+			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["background"] )
+		end
+
+		self.Reason_Request.OnChange = function( self )
+			self.GAdmin_MenuReasonRequestValue = self:GetValue()
+		end
+
+	end
+
+	self.Accept = vgui.Create( "DButton", self )
+	self.Accept:Dock( TOP )
+	self.Accept:DockMargin( 100, 10, 120, 5 )
+	self.Accept:SetTall( 30 )
+	self.Accept:SetText( GAdmin_Menu:GetLanguage("confirm") )
+	self.Accept:SetTextColor( GAdmin_Menu.Constants["colors"]["White"] )
+	self.Accept:SetFont( "OS_UI.Font.20" )
+	self.Accept.Paint = function( me, w, h )
+		draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Green"] )
+	end
+
+end
+
+function PANEL:SetRequestType( type )
+
+	if type == 1 then
+		--"number"
+		self.GAdmin_MenuNumberRequest = true
+		self.GAdmin_MenuReasonRequest = false
+	elseif type == 2 then
+		--"reason"
+		self.GAdmin_MenuNumberRequest = false
+		self.GAdmin_MenuReasonRequest = true
+	elseif type == 3 then
+		--"number and reason"
+		self.GAdmin_MenuNumberRequest = true
+		self.GAdmin_MenuReasonRequest = true
+	end
+
+end
+
+function PANEL:SetTitle( title )
+	self.GAdmin_MenuTitle = title
+end
+
+function PANEL:SetNumberTitle( title )
+	self.GAdmin_NumberTitle = title
+end
+
+function PANEL:SetReasonTitle( title )
+	self.GAdmin_ReasonTitle = title
+end
+
+function PANEL:GetNumberRequest()
+	return self.GAdmin_MenuNumberRequestValue
+end
+
+function PANEL:GetReasonRequest()
+	return self.GAdmin_MenuReasonRequestValue
+end
+
+function PANEL:AcceptFunction( func )
+	self.Accept.DoClick = func
+end
+
+vgui.Register("GAdmin_RequestPanel", PANEL, "DFrame")
+
+
+

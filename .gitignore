@@ -1,3 +1,5 @@
 .vscode/
 .gittattributes
 .github/
+*.exe
+*.json
