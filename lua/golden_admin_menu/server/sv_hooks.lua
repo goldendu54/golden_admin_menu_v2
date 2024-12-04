@@ -5,6 +5,8 @@ end)
 
 
 hook.Add("PlayerSay", "GAdmin_Menu:PlayerSay", function(ply, text, team)
+	if not IsValid(ply) then return end	
+
     local text = string.lower(text)
     if text == GAdmin_Menu.Config.StaffCommand then
 		if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then
@@ -43,6 +45,8 @@ hook.Add("PlayerSay", "GAdmin_Menu:PlayerSay", function(ply, text, team)
 end)
 
 hook.Add("PlayerButtonDown", "GAdmin_Menu:PlayerButtonDown", function(ply, button)
+	if not IsValid(ply) then return end	
+
 	if button == GAdmin_Menu.Config.MenuKey then
 		if not GAdmin_Menu.Config.AdminRanks[ply:GetUserGroup()] then return end
 		GAdmin_Menu:AdminMenu(ply)
@@ -50,21 +54,14 @@ hook.Add("PlayerButtonDown", "GAdmin_Menu:PlayerButtonDown", function(ply, butto
 end)
 
 hook.Add("PlayerDisconnected", "GAdmin_Menu:PlayerDisconnected", function(ply)
-	if ply:GetNWBool("GAdmin:StaffMode") then
-		ply:SetNWBool("GAdmin:StaffMode", false)
-	end
-
-	if ply:GetNWBool("GAdmin:ModMask") then
-		ply:SetNWBool("GAdmin:ModMask", false)
-	end
-
-	if ply:GetNWBool("GAdmin:ModPower") then
-		ply:SetNWBool("GAdmin:ModPower", false)
-	end
+	ply:SetNWBool("GAdmin:StaffMode", nil)
+	ply:SetNWBool("GAdmin:ModMask", nil)
+	ply:SetNWBool("GAdmin:ModPower", nil)
 end)
 
 hook.Add("EntityEmitSound", "GAdmin_Menu:EntityEmitSound", function(data)
 	local ply = data.Entity
+	if not IsValid(ply) then return end	
     if ply:GetClass() == "player" then
 		if ply:GetNWBool("GAdmin:StaffMode") or ply:GetNWBool("GAdmin:ModMask") then 
 			return false
@@ -75,6 +72,7 @@ hook.Add("EntityEmitSound", "GAdmin_Menu:EntityEmitSound", function(data)
 end)
 
 hook.Add("PlayerFootstep", "GAdmin_Menu:PlayerFootstep", function(ply, pos, foot, soundName, volume, filter)
+	if not IsValid(ply) then return end	
 	if ply:GetNWBool("GAdmin:StaffMode") or ply:GetNWBool("GAdmin:ModMask") then 
 		return true
 	else

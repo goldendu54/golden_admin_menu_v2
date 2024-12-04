@@ -32,3 +32,22 @@ else
 	Inclu("client/cl_network.lua")
 
 end
+
+-- Auto load the language folder and the language files
+local language_folder = "golden_admin_menu/languages/"
+local files, folders = file.Find(language_folder.."*", "LUA")
+for k, v in pairs(files) do
+	if string.GetExtensionFromFilename(v) == "lua" then
+		IncAdd("languages/"..v)
+	end
+end
+
+-- Auto load the admin systems
+local admin_systems_folder = "golden_admin_menu/admin_systems/"
+local files, folders = file.Find(admin_systems_folder.."*", "LUA")
+for k, v in pairs(files) do
+	if string.GetExtensionFromFilename(v) == "lua" then
+		IncAdd("admin_systems/"..v)
+	end
+end
+

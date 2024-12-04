@@ -102,12 +102,12 @@ function GAdmin_Menu:OpenMenus(ply, target)
 
     end 
 
-	MainPanelHeader = vgui.Create("DPanel", MainPanel)
+	local MainPanelHeader = vgui.Create("DPanel", MainPanel)
 	MainPanelHeader:Dock( TOP )
 	MainPanelHeader:SetTall( 40 )
 	MainPanelHeader:DockMargin( -5, -30, -5, 0 )
 	MainPanelHeader:InvalidateLayout( true )
-	MainPanelHeader.Paint = function( me, w, h )
+	MainPanelHeader.Paint = function( self, w, h )
 		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
         surface.DrawRect( 0, 0, w, h )
 
@@ -119,7 +119,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	MainPanelHeader.Close:DockMargin( 0, 0, 5, 0 )
 	MainPanelHeader.Close:SetWide( 30 )
 	MainPanelHeader.Close:SetText("")
-	MainPanelHeader.Close.Paint = function( me, w, h )
+	MainPanelHeader.Close.Paint = function( self, w, h )
 
 		surface.SetDrawColor(GAdmin_Menu.Constants["colors"]["Red"])
 		draw.NoTexture()
@@ -135,7 +135,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	TabAdmin_Button:Dock( BOTTOM )
 	TabAdmin_Button:SetTall( 80 )
 	TabAdmin_Button:DockMargin( 0, 0, 0, 0 )
-	TabAdmin_Button.Paint = function( me, w, h )
+	TabAdmin_Button.Paint = function( self, w, h )
 		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
 		surface.DrawRect( 0, 0, w, h )
 	end
@@ -162,7 +162,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	end
 
 	TabAdmin_Button.Btn1.Think = function(self)
-		self.Paint = function(me, w, h)
+		self.Paint = function(self, w, h)
 			if admin:GetNWBool("GAdmin:StaffMode") then
 				draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"] )
 			else
@@ -183,7 +183,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	end
 
 	TabAdmin_Button.Btn2.Think = function(self)
-		self.Paint = function(me, w, h)
+		self.Paint = function(self, w, h)
 			if admin:GetNWBool("GAdmin:ModMask") then
 				draw.RoundedBox(6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"])
 			else
@@ -204,7 +204,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	end
 
 	TabAdmin_Button.Btn3.Think = function(self)
-		self.Paint = function(me, w, h)
+		self.Paint = function(self, w, h)
 			if admin:GetNWBool("GAdmin:ModPower") then
 				draw.RoundedBox(6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"])
 			else
@@ -220,7 +220,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	TabPlayer:Dock( LEFT )
 	TabPlayer:SetWide( 300 )
 	TabPlayer:DockMargin( 0, 5, 5, 5 )
-	TabPlayer.Paint = function( me, w, h )
+	TabPlayer.Paint = function( self, w, h )
 		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
 		surface.DrawRect( 0, 0, w, h )
 	end
@@ -274,11 +274,12 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	end
 
 	// -- Player Information Tab -- //
-	TabPlayer_Info = vgui.Create( "DPanel", MainPanel )
+	local TabPlayer_Info = vgui.Create( "DPanel", MainPanel )
 	TabPlayer_Info:Dock( FILL )
 	TabPlayer_Info:DockMargin( 5, 5, 5, 5 )
-	TabPlayer_Info.Paint = function( me, w, h )
-		OS_UI.DrawRect( 0, 0, w, h, GAdmin_Menu.Constants["colors"]["header"] )
+	TabPlayer_Info.Paint = function( self, w, h )
+		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
+		surface.DrawRect( 0, 0, w, h )
 	end
 
 	TabPlayer_Info_Label = vgui.Create( "DLabel", TabPlayer_Info )
@@ -320,249 +321,138 @@ function GAdmin_Menu:OpenMenus(ply, target)
 	TabPlayer_Button:Dock( RIGHT )
 	TabPlayer_Button:SetWide( 300 )
 	TabPlayer_Button:DockMargin( 5, 5, 0, 5 )
-	TabPlayer_Button.Paint = function( me, w, h )
+	TabPlayer_Button.Paint = function( self, w, h )
 		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
 		surface.DrawRect( 0, 0, w, h )
 	end
 
-	local btn_tbl = {
+local btn_tbl = {
 		[1] = {
 			name = GAdmin_Menu:GetLanguage("goto"),
 			func = function()
+				if GAdmin_Menu:TargetCheck(target) == false then return end
 
-				if GAdmin_Menu:TargetCheck() == false then return end
-
-				RunConsoleCommand("sa", "goto", target:Nick())
+				local sys = GAdmin_Menu:GetAdminSystem()
+				if sys then
+					sys["goto"](ply, target)
+				end
 			end
 		},
 		[2] = {
 			name = "bring",
 			func = function()
-				if GAdmin_Menu:TargetCheck() == false then return end
+				if GAdmin_Menu:TargetCheck(target) == false then return end
 
-				RunConsoleCommand("sa", "bring", target:Nick())
+				local sys = GAdmin_Menu:GetAdminSystem()
+				if sys then
+					sys["bring"](ply, target)
+				end
 			end
 		},
 		[3] = {
 			name = "Return",
 			func = function()
-				if GAdmin_Menu:TargetCheck() == false then return end
+				if GAdmin_Menu:TargetCheck(target) == false then return end
 
-				RunConsoleCommand("sa", "return", target:Nick())
+				local sys = GAdmin_Menu:GetAdminSystem()
+				if sys then
+					sys["return"](ply, target)
+				end
 			end
 		},
 		[4] = {
 			name = target:IsFrozen() and "Unfreeze" or "Freeze",
 			func = function()
-				if GAdmin_Menu:TargetCheck() == false then return end
+				if GAdmin_Menu:TargetCheck(target) == false then return end
 
 				if target:IsFrozen() then
-					RunConsoleCommand("sa", "unfreeze", target:Nick())
+
+					local sys = GAdmin_Menu:GetAdminSystem()
+					if sys then
+						sys["unfreeze"](ply, target)
+					end
 				else
-					RunConsoleCommand("sa", "freeze", target:Nick())
+
+					local sys = GAdmin_Menu:GetAdminSystem()
+					if sys then
+						sys["freeze"](ply, target)
+					end
 				end
 			end
 		},
 		[5] = {
 			name = "Spectate",
 			func = function()
-				if GAdmin_Menu:TargetCheck() == false then return end
+				if GAdmin_Menu:TargetCheck(target) == false then return end
 
-				RunConsoleCommand("sa", "spectate", target:Nick())
+				local sys = GAdmin_Menu:GetAdminSystem()
+				if sys then
+					sys["spectate"](ply, target)
+				end
 			end
 		},
 		[6] = {
 			name = "Kick",
 			func = function()
-				if GAdmin_Menu:TargetCheck() == false then return end
+				if GAdmin_Menu:TargetCheck(target) == false then return end
 
-				self:SetVisible(false)
-				/*
-				local RFrame = vgui.Create("DFrame")
-				RFrame:SetSize(RX(400), RY(200))
-				RFrame:Center()
-				RFrame:SetTitle("")
-				RFrame:MakePopup()
-				RFrame.Paint = function(self, w, h)
-					OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_BACKGROUND )
-				end
-			
-				RFrame.Header = vgui.Create("DPanel", RFrame)
-				RFrame.Header:Dock( TOP )
-				RFrame.Header:SetTall( 40 )
-				RFrame.Header:DockMargin( -5, -30, -5, 0 )
-				RFrame.Header:InvalidateLayout( true )
-				RFrame.Header.Paint = function( me, w, h )
-					OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-					OS_UI.DrawText( "Menu Administratif - KICK ", "OS_UI.Font.21", w / 2, h / 2, OS_UI.Colors.GREY, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				end
-			
-				OS_UI.CreateIconObject( RFrame.Header, OS_UI.Icons.CIRCLE, RFrame:GetWide() - 22, RFrame.Header:GetTall() / 2 - 6, 12, 12, true, function()
-					RFrame:Close()
-				end )
-			
-				RFrame.Text = vgui.Create("DLabel", RFrame)
-				RFrame.Text:Dock( TOP )
-				RFrame.Text:SetTall( 30 )
-				RFrame.Text:DockMargin( 5, 5, 5, 5 )
-				RFrame.Text:SetText( "Temps (en minutes) :" )
-				RFrame.Text:SetFont( "OS_UI.Font.20" )
-				RFrame.Text:SetTextColor( OS_UI.Colors.GREY )
-				RFrame.Text:SizeToContents()
+				MainPanel:SetVisible(false)
 
-				RFrame.Time_Request = vgui.Create( "DTextEntry", RFrame )
-				RFrame.Time_Request:Dock( TOP )
-				RFrame.Time_Request:DockMargin( 30, 10, 30, 5 )
-				RFrame.Time_Request:SetTall( 30 )
-				RFrame.Time_Request:SetFont( "OS_UI.Font.20" )
+				local tbl = {
+					title = "Menu Administratif - KICK",
+					types = 2,
+					reasonTitle = "Raison :",
+					accept = "Confirmer",
+					cancel = "Annuler",
+					func = function( reason, time )
 
+						local sys = GAdmin_Menu:GetAdminSystem()
+						if sys then
+							sys["kick"](ply, target, reason)
+						end
 
-				RFrame.Time_Request.Paint = function( me, w, h )
-					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-					me:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
-				end
-
-				RFrame.Accept = vgui.Create( "DButton", RFrame )
-				RFrame.Accept:Dock( TOP )
-				RFrame.Accept:DockMargin( 100, 10, 120, 5 )
-				RFrame.Accept:SetTall( 30 )
-				RFrame.Accept:SetText( "Confirmer" )
-				RFrame.Accept:SetTextColor( OS_UI.Colors.WHITE )
-				RFrame.Accept:SetFont( "OS_UI.Font.20" )
-				RFrame.Accept.Paint = function( me, w, h )
-					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.GREEN )
-				end
-
-				RFrame.Accept.DoClick = function()
-					RunConsoleCommand("sa", "kick", Player_Selected:Nick(), RFrame.Time_Request:GetValue())
-
-					RFrame:Close()
-
-					self:SetVisible(true)	
-
-				end
-
-			
-
-*/
-
-				RequestPanel = vgui.Create("GAdmin_RequestPanel")
-				RequestPanel:SetTitle(GAdmin_Menu.Config.Title.. " - " .. GAdmin_Menu:GetLanguage("kick"))
-				RequestPanel:AcceptFunction(function(reason)
-					RunConsoleCommand("sa", "kick", target:Nick(), reason)
-					self:SetVisible(true)
-					
-				end)
-				RequestPanel:MakePopup()
-
-				
-
-
+						MainPanel:SetVisible(true)
+					end
+				}
+				GAdmin_Menu:RequestMenu(tbl)
 			end
 		},
 		[7] = {
 			name = "Ban",
 			func = function()
-				if GAdmin_Menu:TargetCheck() == false then return end
+				if GAdmin_Menu:TargetCheck(target) == false then return end
 
-				self:SetVisible(false)
+				MainPanel:SetVisible(false)
 			
-				local RFrame = vgui.Create("DFrame")
-				RFrame:SetSize(RX(400), RY(300))
-				RFrame:Center()
-				RFrame:SetTitle("")
-				RFrame:MakePopup()
-				RFrame.Paint = function(self, w, h)
-					OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_BACKGROUND )
-				end
-			
-				RFrame.Header = vgui.Create("DPanel", RFrame)
-				RFrame.Header:Dock( TOP )
-				RFrame.Header:SetTall( 40 )
-				RFrame.Header:DockMargin( -5, -30, -5, 0 )
-				RFrame.Header:InvalidateLayout( true )
-				RFrame.Header.Paint = function( me, w, h )
-					OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-					OS_UI.DrawText( "Menu Administratif - BAN ", "OS_UI.Font.21", w / 2, h / 2, OS_UI.Colors.GREY, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				end
-			
-				OS_UI.CreateIconObject( RFrame.Header, OS_UI.Icons.CIRCLE, RFrame:GetWide() - 22, RFrame.Header:GetTall() / 2 - 6, 12, 12, true, function()
-					RFrame:Close()
+				local tbl = {
+					title = "Menu Administratif - BAN",
+					types = 2,
+					reasonTitle = "Raison :",
+					timeTitle = "Temps (en minutes) :",
+					accept = "Confirmer",
+					cancel = "Annuler",
+					func = function( reason, time )
 
-					self:SetVisible(true)
-				end )
-			
-				RFrame.Text = vgui.Create("DLabel", RFrame)
-				RFrame.Text:Dock( TOP )
-				RFrame.Text:SetTall( 30 )
-				RFrame.Text:DockMargin( 5, 5, 5, 5 )
-				RFrame.Text:SetText( "Temps (en minutes) :" )
-				RFrame.Text:SetFont( "OS_UI.Font.20" )
-				RFrame.Text:SetTextColor( OS_UI.Colors.GREY )
-				RFrame.Text:SizeToContents()
+						local sys = GAdmin_Menu:GetAdminSystem()
+						if sys then
+							sys["ban"](ply, target, time, reason)
+						end
 
-				RFrame.Time_Request = vgui.Create( "DTextEntry", RFrame )
-				RFrame.Time_Request:Dock( TOP )
-				RFrame.Time_Request:DockMargin( 30, 10, 30, 5 )
-				RFrame.Time_Request:SetTall( 30 )
-				RFrame.Time_Request:SetFont( "OS_UI.Font.20" )
-				RFrame.Time_Request:SetNumeric( true )
-
-				RFrame.Time_Request.Paint = function( me, w, h )
-					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-					me:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
-				end
-
-				RFrame.Reason = vgui.Create("DLabel", RFrame)
-				RFrame.Reason:Dock( TOP )
-				RFrame.Reason:SetTall( 30 )
-				RFrame.Reason:DockMargin( 5, 5, 5, 5 )
-				RFrame.Reason:SetText( "Raison :" )
-				RFrame.Reason:SetFont( "OS_UI.Font.20" )
-				RFrame.Reason:SetTextColor( OS_UI.Colors.GREY )
-				RFrame.Reason:SizeToContents()
-
-
-				RFrame.Reason_Request = vgui.Create( "DTextEntry", RFrame )
-				RFrame.Reason_Request:Dock( TOP )
-				RFrame.Reason_Request:DockMargin( 30, 10, 30, 5 )
-				RFrame.Reason_Request:SetTall( 30 )
-				RFrame.Reason_Request:SetFont( "OS_UI.Font.20" )
-				RFrame.Reason_Request:SetPlaceholderText("Raison")
-
-				RFrame.Reason_Request.Paint = function( me, w, h )
-					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-					me:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
-				end
-
-				RFrame.Accept = vgui.Create( "DButton", RFrame )
-				RFrame.Accept:Dock( TOP )
-				RFrame.Accept:DockMargin( 100, 10, 120, 5 )
-				RFrame.Accept:SetTall( 30 )
-				RFrame.Accept:SetText( "Confirmer" )
-				RFrame.Accept:SetTextColor( OS_UI.Colors.WHITE )
-				RFrame.Accept:SetFont( "OS_UI.Font.20" )
-				RFrame.Accept.Paint = function( me, w, h )
-					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.GREEN )
-				end
-
-				RFrame.Accept.DoClick = function()
-					RunConsoleCommand("sa", "ban", Player_Selected:Nick(), RFrame.Time_Request:GetValue(), RFrame.Reason_Request:GetValue())
-
-					RFrame:Close()
-
-					self:SetVisible(true)	
-
-				end
-
-
+						MainPanel:SetVisible(true)
+					end
+				}
+				GAdmin_Menu:RequestMenu(tbl)
 			end
 		},
 		[8] = {
 			name = "Slay",
 			func = function()
-				if GAdmin_Menu:TargetCheck() == false then return end
-				RunConsoleCommand("sa", "slay", Player_Selected:Nick())
+				if GAdmin_Menu:TargetCheck(target) == false then return end
+
+				local sys = GAdmin_Menu:GetAdminSystem()
+				if sys then
+					sys["slay"](ply, target)
+				end
 			end
 		},
 		[10] = {
@@ -585,7 +475,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 				RFrame.Header:SetTall( 40 )
 				RFrame.Header:DockMargin( -5, -30, -5, 0 )
 				RFrame.Header:InvalidateLayout( true )
-				RFrame.Header.Paint = function( me, w, h )
+				RFrame.Header.Paint = function( self, w, h )
 					OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
 					OS_UI.DrawText( "Menu Administratif - SET HEALTH ", "OS_UI.Font.21", w / 2, h / 2, OS_UI.Colors.GREY, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
@@ -612,9 +502,9 @@ function GAdmin_Menu:OpenMenus(ply, target)
 				RFrame.Health_Request:SetFont( "OS_UI.Font.20" )
 				RFrame.Health_Request:SetNumeric( true )
 
-				RFrame.Health_Request.Paint = function( me, w, h )
+				RFrame.Health_Request.Paint = function( self, w, h )
 					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-					me:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
+					self:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
 				end
 
 				RFrame.Accept = vgui.Create( "DButton", RFrame )
@@ -624,7 +514,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 				RFrame.Accept:SetText( "Confirmer" )
 				RFrame.Accept:SetTextColor( OS_UI.Colors.WHITE )
 				RFrame.Accept:SetFont( "OS_UI.Font.20" )
-				RFrame.Accept.Paint = function( me, w, h )
+				RFrame.Accept.Paint = function( self, w, h )
 					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.GREEN )
 				end
 
@@ -634,6 +524,20 @@ function GAdmin_Menu:OpenMenus(ply, target)
 					RFrame:Close()
 					self:SetVisible(true)	
 				end
+
+				tbl = {
+					title = "Menu Administratif - SET HEALTH",
+					types = 2,
+					reasonTitle = "Raison :",
+					accept = "Confirmer",
+					cancel = "Annuler",
+					func = function( reason, time )
+						RunConsoleCommand("sa", "hp", target:Nick(), reason)
+						MainPanel:SetVisible(true)
+					end
+				}
+
+				GAdmin_Menu:RequestMenu(tbl)
 
 			end
 		},
@@ -657,7 +561,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 				RFrame.Header:SetTall( 40 )
 				RFrame.Header:DockMargin( -5, -30, -5, 0 )
 				RFrame.Header:InvalidateLayout( true )
-				RFrame.Header.Paint = function( me, w, h )
+				RFrame.Header.Paint = function( self, w, h )
 					OS_UI.DrawRect( 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
 					OS_UI.DrawText( "Menu Administratif - SET ARMOR ", "OS_UI.Font.21", w / 2, h / 2, OS_UI.Colors.GREY, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
@@ -684,9 +588,9 @@ function GAdmin_Menu:OpenMenus(ply, target)
 				RFrame.Armor_Request:SetFont( "OS_UI.Font.20" )
 				RFrame.Armor_Request:SetNumeric( true )
 
-				RFrame.Armor_Request.Paint = function( me, w, h )
+				RFrame.Armor_Request.Paint = function( self, w, h )
 					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.BASE_HEADER )
-					me:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
+					self:DrawTextEntryText( OS_UI.Colors.WHITE, OS_UI.Colors.RED, OS_UI.Colors.WHITE )
 				end
 
 				RFrame.Accept = vgui.Create( "DButton", RFrame )
@@ -696,7 +600,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 				RFrame.Accept:SetText( "Confirmer" )
 				RFrame.Accept:SetTextColor( OS_UI.Colors.WHITE )
 				RFrame.Accept:SetFont( "OS_UI.Font.20" )
-				RFrame.Accept.Paint = function( me, w, h )
+				RFrame.Accept.Paint = function( self, w, h )
 					OS_UI.DrawRoundedBox( 6, 0, 0, w, h, OS_UI.Colors.GREEN )
 				end
 
@@ -706,6 +610,8 @@ function GAdmin_Menu:OpenMenus(ply, target)
 					RFrame:Close()
 					self:SetVisible(true)	
 				end
+
+				
 
 			end
 		},
@@ -727,7 +633,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 		btn:SetFont( "OS_UI.Font.20" )
 		btn:SetTextColor( OS_UI.Colors.WHITE )
 		btn.DoClick = v.func
-		btn.Paint = function( me, w, h )
+		btn.Paint = function( self, w, h )
 			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Red"] )
 		end
 	end
@@ -736,7 +642,7 @@ function GAdmin_Menu:OpenMenus(ply, target)
 
 end
 
-function GAdmin_Menu:TargetCheck()
+function GAdmin_Menu:TargetCheck(target)
 	if target == nil then 
 		notification.AddLegacy( GAdmin_Menu:GetLanguage("needToSelecPlayer"), 2, 3)
 		return false
@@ -750,159 +656,150 @@ function GAdmin_Menu:TargetCheck()
 	return true
 end
 
+function GAdmin_Menu:RequestMenu(tbl)
 
-
-
-local PANEL = {}
-
-function PANEL:Init()
-
-	self.GAdmin_MenuNumberRequest = false
-	self.GAdmin_MenuReasonRequest = false
-	self.GAdmin_MenuTitle = ""
-	self.GAdmin_NumberTitle = ""
-	self.GAdmin_ReasonTitle = ""
-
-	if self.GAdmin_MenuNumberRequest and self.GAdmin_MenuReasonRequest then
-		self:SetSize( RX(400), RY(300) )
+	local RequestMenu = vgui.Create("DFrame")
+	if tbl.types == 3 then
+		RequestMenu:SetSize( RX(400), RY(300) )
 	else
-		self:SetSize( RX(400), RY(200) )
+		RequestMenu:SetSize( RX(400), RY(200) )
 	end
-	self:Center()
-	self:SetTitle("")
-	self:MakePopup()
-	self.Paint = function(self, w, h)
+	RequestMenu:Center()
+	RequestMenu:SetTitle("")
+	RequestMenu:MakePopup()
+	RequestMenu:ShowCloseButton(false)
+	RequestMenu.Paint = function(self, w, h)
 		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["background"] )
 		surface.DrawRect( 0, 0, w, h )
 	end
 
-	self.Header = vgui.Create("DPanel", self)
-	self.Header:Dock( TOP )
-	self.Header:SetTall( 40 )
-	self.Header:DockMargin( -5, -30, -5, 0 )
-	self.Header:InvalidateLayout( true )
-	self.Header.Paint = function( me, w, h )
+	RequestMenu.Header = vgui.Create("DPanel", RequestMenu)
+	RequestMenu.Header:Dock( TOP )
+	RequestMenu.Header:SetTall( 40 )
+	RequestMenu.Header:DockMargin( -5, -30, -5, 0 )
+	RequestMenu.Header:InvalidateLayout( true )
+	RequestMenu.Header.Paint = function( self, w, h )
 		surface.SetDrawColor( GAdmin_Menu.Constants["colors"]["header"] )
 		surface.DrawRect( 0, 0, w, h )
-		draw.SimpleText( self.GAdmin_MenuTitle, "OS_UI.Font.21", w / 2, h / 2, GAdmin_Menu.Constants["colors"]["Grey"], TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.SimpleText( tbl.title, "OS_UI.Font.21", w/ 2 - RequestMenu.Header:GetTall()/ 2.5 , h/ 2, GAdmin_Menu.Constants["colors"]["Grey"], TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	end
 
-	self.Header.Close = vgui.Create("DButton", self.Header)
-	self.Header.Close:SetSize( 12, 12 )
-	self.Header.Close:SetPos( self.Header:GetWide() - 22, self.Header:GetTall() / 2 - 6 )
-	self.Header.Close:SetText("")
-	self.Header.Close.Paint = function(self, w, h)
-		draw.Circle( w / 2, h / 2, 6, 6, GAdmin_Menu.Constants["colors"]["Red"] )
-	end
-	self.Header.Close.DoClick = function()
-		self:Close()
-	end
-
-	if self.GAdmin_MenuNumberRequest then
-
-		self.Number_Request_Text = vgui.Create( "DLabel", self )
-		self.Number_Request_Text:Dock( TOP )
-		self.Number_Request_Text:SetTall( 30 )
-		self.Number_Request_Text:DockMargin( 5, 5, 5, 5 )
-		self.Number_Request_Text:SetText( self.GAdmin_NumberTitle )
-		self.Number_Request_Text:SetFont( "OS_UI.Font.20" )
-
-		self.Number_Request = vgui.Create( "DTextEntry", self )
-		self.Number_Request:Dock( TOP )
-		self.Number_Request:DockMargin( 30, 10, 30, 5 )
-		self.Number_Request:SetTall( 30 )
-		self.Number_Request:SetFont( "OS_UI.Font.20" )
-		self.Number_Request:SetNumeric( true )
-		self.Number_Request.Paint = function( me, w, h )
-			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["background"] )
-		end
+	RequestMenu.Header.Close = vgui.Create("DButton", RequestMenu.Header)
+	RequestMenu.Header.Close:SetSize( RequestMenu.Header:GetTall(), RequestMenu.Header:GetTall() )
+	RequestMenu.Header.Close:Dock( RIGHT )
+	RequestMenu.Header.Close:DockMargin( 5,0, 0, 0 )
+	RequestMenu.Header.Close:SetText("")
+	RequestMenu.Header.Close.Paint = function(self, w, h)
+		surface.SetDrawColor(GAdmin_Menu.Constants["colors"]["Red"])
+		draw.NoTexture()
+		draw.Circle( w / 2, h / 2, 7, 50 )
 		
-		self.Number_Request.OnChange = function( self )
-			self.GAdmin_MenuNumberRequestValue = self:GetValue()
-		end
-
+	end
+	RequestMenu.Header.Close.DoClick = function()
+		RequestMenu:Close()
 	end
 
-	if self.GAdmin_MenuReasonRequest then
 
-		self.Reason_Request_Text = vgui.Create( "DLabel", self )
-		self.Reason_Request_Text:Dock( TOP )
-		self.Reason_Request_Text:SetTall( 30 )
-		self.Reason_Request_Text:DockMargin( 5, 5, 5, 5 )
-		self.Reason_Request_Text:SetText( self.GAdmin_ReasonTitle )
-		self.Reason_Request_Text:SetFont( "OS_UI.Font.20" )
+	if tbl.types == 1 then
+
+		RequestMenu.Number_Request_Text = vgui.Create( "DLabel", RequestMenu )
+		RequestMenu.Number_Request_Text:Dock( TOP )
+		RequestMenu.Number_Request_Text:SetTall( 30 )
+		RequestMenu.Number_Request_Text:DockMargin( 5, 0, 5, 0 )
+		RequestMenu.Number_Request_Text:SetText( tbl.numberTitle )
+		RequestMenu.Number_Request_Text:SetFont( "OS_UI.Font.20" )
+
+		RequestMenu.Number_Request = vgui.Create( "DTextEntry", RequestMenu )
+		RequestMenu.Number_Request:Dock( TOP )
+		RequestMenu.Number_Request:DockMargin( 30, 0, 30, 0)
+		RequestMenu.Number_Request:SetTall( 30 )
+		RequestMenu.Number_Request:SetFont( "OS_UI.Font.20" )
+		RequestMenu.Number_Request:SetNumeric( true )
+		RequestMenu.Number_Request.Paint = function( self, w, h )
+			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["header"] )
+			self:DrawTextEntryText( GAdmin_Menu.Constants["colors"]["White"], GAdmin_Menu.Constants["colors"]["Grey"], GAdmin_Menu.Constants["colors"]["White"] )
+		end
+
+	elseif tbl.types == 2 then
+		RequestMenu.Reason_Request_Text = vgui.Create( "DLabel", RequestMenu )
+		RequestMenu.Reason_Request_Text:Dock( TOP )
+		RequestMenu.Reason_Request_Text:SetTall( 30 )
+		RequestMenu.Reason_Request_Text:DockMargin( 5, 0, 5, 0 )
+		RequestMenu.Reason_Request_Text:SetText( tbl.reasonTitle )
+		RequestMenu.Reason_Request_Text:SetFont( "OS_UI.Font.20" )
+
 		
-		self.Reason_Request = vgui.Create( "DTextEntry", self )
-		self.Reason_Request:Dock( TOP )
-		self.Reason_Request:DockMargin( 30, 10, 30, 5 )
-		self.Reason_Request:SetTall( 30 )
-		self.Reason_Request:SetFont( "OS_UI.Font.20" )
-		self.Reason_Request.Paint = function( me, w, h )
-			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["background"] )
+		RequestMenu.Reason_Request = vgui.Create( "DTextEntry", RequestMenu )
+		RequestMenu.Reason_Request:Dock( TOP )
+		RequestMenu.Reason_Request:DockMargin( 30, 10, 30, 0 )
+		RequestMenu.Reason_Request:SetTall( 30 )
+		RequestMenu.Reason_Request:SetFont( "OS_UI.Font.20" )
+		RequestMenu.Reason_Request.Paint = function( self, w, h )
+			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["header"] )
+			self:DrawTextEntryText( GAdmin_Menu.Constants["colors"]["White"], GAdmin_Menu.Constants["colors"]["Grey"], GAdmin_Menu.Constants["colors"]["White"] )
 		end
 
-		self.Reason_Request.OnChange = function( self )
-			self.GAdmin_MenuReasonRequestValue = self:GetValue()
+	elseif tbl.types == 3 then
+
+		RequestMenu.Number_Request_Text = vgui.Create( "DLabel", RequestMenu )
+		RequestMenu.Number_Request_Text:Dock( TOP )
+		RequestMenu.Number_Request_Text:SetTall( 30 )
+		RequestMenu.Number_Request_Text:DockMargin( 5, 0, 5, 0 )
+		RequestMenu.Number_Request_Text:SetText( tbl.numberTitle )
+		RequestMenu.Number_Request_Text:SetFont( "OS_UI.Font.20" )
+
+		RequestMenu.Number_Request = vgui.Create( "DTextEntry", RequestMenu )
+		RequestMenu.Number_Request:Dock( TOP )
+		RequestMenu.Number_Request:DockMargin( 30, 0, 30, 0)
+		RequestMenu.Number_Request:SetTall( 30 )
+		RequestMenu.Number_Request:SetFont( "OS_UI.Font.20" )
+		RequestMenu.Number_Request:SetNumeric( true )
+		RequestMenu.Number_Request.Paint = function( self, w, h )
+			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["header"] )
+			self:DrawTextEntryText( GAdmin_Menu.Constants["colors"]["White"], GAdmin_Menu.Constants["colors"]["Grey"], GAdmin_Menu.Constants["colors"]["White"] )
+		end
+
+
+		RequestMenu.Reason_Request_Text = vgui.Create( "DLabel", RequestMenu )
+		RequestMenu.Reason_Request_Text:Dock( TOP )
+		RequestMenu.Reason_Request_Text:SetTall( 30 )
+		RequestMenu.Reason_Request_Text:DockMargin( 5, 0, 5, 0 )
+		RequestMenu.Reason_Request_Text:SetText( tbl.reasonTitle )
+		RequestMenu.Reason_Request_Text:SetFont( "OS_UI.Font.20" )
+		
+		RequestMenu.Reason_Request = vgui.Create( "DTextEntry", RequestMenu )
+		RequestMenu.Reason_Request:Dock( TOP )
+		RequestMenu.Reason_Request:DockMargin( 30, 0, 30, 0 )
+		RequestMenu.Reason_Request:SetTall( 30 )
+		RequestMenu.Reason_Request:SetFont( "OS_UI.Font.20" )
+		RequestMenu.Reason_Request.Paint = function( self, w, h )
+			draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["header"] )
+			self:DrawTextEntryText( GAdmin_Menu.Constants["colors"]["White"], GAdmin_Menu.Constants["colors"]["Grey"], GAdmin_Menu.Constants["colors"]["White"] )
 		end
 
 	end
 
-	self.Accept = vgui.Create( "DButton", self )
-	self.Accept:Dock( TOP )
-	self.Accept:DockMargin( 100, 10, 120, 5 )
-	self.Accept:SetTall( 30 )
-	self.Accept:SetText( GAdmin_Menu:GetLanguage("confirm") )
-	self.Accept:SetTextColor( GAdmin_Menu.Constants["colors"]["White"] )
-	self.Accept:SetFont( "OS_UI.Font.20" )
-	self.Accept.Paint = function( me, w, h )
+	RequestMenu.Accept = vgui.Create( "DButton", RequestMenu )
+	RequestMenu.Accept:Dock( TOP )
+	RequestMenu.Accept:DockMargin( 100, 10, 120, 0 )
+	RequestMenu.Accept:SetTall( 30 )
+	RequestMenu.Accept:SetText( GAdmin_Menu:GetLanguage("confirm") )
+	RequestMenu.Accept:SetTextColor( GAdmin_Menu.Constants["colors"]["White"] )
+	RequestMenu.Accept:SetFont( "OS_UI.Font.20" )
+	RequestMenu.Accept.Paint = function( self, w, h )
 		draw.RoundedBox( 6, 0, 0, w, h, GAdmin_Menu.Constants["colors"]["Green"] )
 	end
+	RequestMenu.Accept.DoClick = function()
+		RequestMenu:Close()
 
-end
-
-function PANEL:SetRequestType( type )
-
-	if type == 1 then
-		--"number"
-		self.GAdmin_MenuNumberRequest = true
-		self.GAdmin_MenuReasonRequest = false
-	elseif type == 2 then
-		--"reason"
-		self.GAdmin_MenuNumberRequest = false
-		self.GAdmin_MenuReasonRequest = true
-	elseif type == 3 then
-		--"number and reason"
-		self.GAdmin_MenuNumberRequest = true
-		self.GAdmin_MenuReasonRequest = true
+		if tbl.types == 1 then
+			tbl.func(nil, RequestMenu.Number_Request:GetValue())
+		elseif tbl.types == 2 then
+			tbl.func(RequestMenu.Reason_Request:GetValue(), nil)
+		elseif tbl.types == 3 then
+			tbl.func(RequestMenu.Number_Request:GetValue(), RequestMenu.Reason_Request:GetValue())
+		end
+		
 	end
 
 end
-
-function PANEL:SetTitle( title )
-	self.GAdmin_MenuTitle = title
-end
-
-function PANEL:SetNumberTitle( title )
-	self.GAdmin_NumberTitle = title
-end
-
-function PANEL:SetReasonTitle( title )
-	self.GAdmin_ReasonTitle = title
-end
-
-function PANEL:GetNumberRequest()
-	return self.GAdmin_MenuNumberRequestValue
-end
-
-function PANEL:GetReasonRequest()
-	return self.GAdmin_MenuReasonRequestValue
-end
-
-function PANEL:AcceptFunction( func )
-	self.Accept.DoClick = func
-end
-
-vgui.Register("GAdmin_RequestPanel", PANEL, "DFrame")
-
-
-

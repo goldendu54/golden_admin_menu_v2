@@ -13,7 +13,3 @@ GAdmin_Menu.Constants["colors"] = {
 	["Blue"] = Color( 0, 168, 255 ),
 }
 
--- Materials constants
-GAdmin_Menu.Constants["materials"] = {
-	-- ["logo"] = Material("../html/loading.png"),
-}

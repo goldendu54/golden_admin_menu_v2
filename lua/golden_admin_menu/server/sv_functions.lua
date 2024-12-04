@@ -13,6 +13,7 @@ end
 
 --[[ Functions ]]--
 function GAdmin_Menu:SetToStaffMode(ply)
+    if not IsValid(ply) then return end	
 
     if ply:GetNWBool("GAdmin:StaffMode") then
         ply:SetNWBool("GAdmin:StaffMode", false)
@@ -20,7 +21,7 @@ function GAdmin_Menu:SetToStaffMode(ply)
         RunConsoleCommand("sa", "uncloak", ply:Nick())
         RunConsoleCommand("sa", "ungod", ply:Nick())
 
-        GAdmin_Menu:Notify(ply, "Vous avez quitté le mode staff.")
+        GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("leaveStaffMode"))
 
         GAdmin_Menu:ModMask(ply)
         GAdmin_Menu:ModPower(ply)
@@ -32,7 +33,7 @@ function GAdmin_Menu:SetToStaffMode(ply)
         RunConsoleCommand("sa", "cloak", ply:Nick())
         RunConsoleCommand("sa", "god", ply:Nick())
 
-        GAdmin_Menu:Notify(ply, "Vous avez rejoint le mode staff.")
+        GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("joinStaffMode"))
 
         GAdmin_Menu:ModMask(ply)
         GAdmin_Menu:ModPower(ply)
@@ -42,51 +43,33 @@ function GAdmin_Menu:SetToStaffMode(ply)
 end
 
 function GAdmin_Menu:ModMask(ply)
+    if not IsValid(ply) then return end	
 
     if ply:GetNWBool("GAdmin:ModMask") then
         ply:SetNWBool("GAdmin:ModMask", false)
-
-        GAdmin_Menu:Notify(ply, "You have been unmasked!")
+        GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("unmasked"))
     else
-        
         ply:SetNWBool("GAdmin:ModMask", true)
-
-        GAdmin_Menu:Notify(ply, "You have been masked!")
-
-        ply:EmitSound("player/suit_sprint.wav")
+        GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("masked"))
     end
 end
 
 function GAdmin_Menu:ModPower(ply)
+    if not IsValid(ply) then return end	
 
     if ply:GetNWBool("GAdmin:ModPower") then
         ply:SetNWBool("GAdmin:ModPower", false)
-
-        GAdmin_Menu:Notify(ply, "You have been depowered!")
+        GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("depowered"))
     else
-        
         ply:SetNWBool("GAdmin:ModPower", true)
-
-        GAdmin_Menu:Notify(ply, "You have been powered!")
-
-        ply:EmitSound("player/suit_sprint.wav")
+        GAdmin_Menu:Notify(ply, GAdmin_Menu:GetLanguage("powered"))
     end
 
 
 end
 
-
 function GAdmin_Menu:AdminMenu(ply)
-
+    if not IsValid(ply) then return end	
     net.Start("GAdmin_Menu:OpenMenu")
     net.Send(ply)
-
-end
-
-
-function GAdmin_Menu:Simple_Gestion(ply)
-
-    net.Start("GAdmin_Menu:OpenSimpleMenu")
-    net.Send(ply)
-
 end
